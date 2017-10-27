@@ -10,10 +10,12 @@
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
+from typing import Optional
 
-
+from pacman import GameState
 from util import manhattanDistance
 from game import Directions
+
 import random, util
 
 from game import Agent
@@ -114,7 +116,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
       Your minimax agent (question 2)
     """
 
-    def getAction(self, gameState):
+    def getAction(self, gameState: GameState) -> str:
         """
           Returns the minimax action from the current gameState using self.depth
           and self.evaluationFunction.
@@ -131,8 +133,73 @@ class MinimaxAgent(MultiAgentSearchAgent):
           gameState.getNumAgents():
             Returns the total number of agents in the game
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        legal_actions = gameState.getLegalActions(agentIndex=0)
+
+        best_action_index = max(
+            range(len(legal_actions)),
+            key=lambda action_num: self.min_value(
+                state=gameState.generateSuccessor(agentIndex=0, action=legal_actions[action_num]),
+                depth=self.depth,
+                ghost_num=1,
+            )
+        )
+        return legal_actions[best_action_index]
+
+    def max_value(self, state: GameState, depth: int, actor: Optional[int] = None) -> int:
+        # Sanity check: have all the ghosts been evaluated the last round?
+        if actor is not None:
+            assert actor == state.getNumAgents()
+
+        # Game over or search depth has been reached
+        if state.isLose() or state.isWin() or depth <= 0:
+            return self.evaluationFunction(state)
+
+        legal_actions = state.getLegalActions(agentIndex=0)
+        successors = [
+            state.generateSuccessor(agentIndex=0, action=action)
+            for action
+            in legal_actions
+        ]
+        utilities = [
+            self.min_value(state, depth, ghost_num=1)
+            for state
+            in successors
+        ]
+
+        return max(utilities)
+
+    def min_value(self, state: GameState, depth: int, ghost_num: int) -> int:
+
+        # Game over or search depth has been reached
+        if state.isLose() or state.isWin() or depth <= 0:
+            return self.evaluationFunction(state)
+
+        # Sanity check: valid ghost number?
+        assert 1 <= ghost_num < state.getNumAgents()
+
+        legal_actions = state.getLegalActions(ghost_num)
+
+        successors = [
+            state.generateSuccessor(ghost_num, ghost_action)
+            for ghost_action
+            in legal_actions
+        ]
+
+        # If this is the last ghost, next optimizer should be from pacman's perspective
+        next_optimizer = self.max_value \
+            if ghost_num == state.getNumAgents() - 1 \
+            else self.min_value
+
+        # If this is the last ghost, decrement depth
+        next_depth = depth - 1 if ghost_num == state.getNumAgents() - 1 else depth
+
+        utilities = [
+            next_optimizer(state, next_depth, ghost_num + 1)
+            for state
+            in successors
+        ]
+
+        return min(utilities)
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
