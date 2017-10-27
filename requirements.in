@@ -1,0 +1,8 @@
+numpy
+mypy
+pytest
+pip-tools
+python-language-server
+neovim
+jupyter
+pdbpp
