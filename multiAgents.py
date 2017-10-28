@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -35,19 +35,30 @@ class ReflexAgent(Agent):
         """
         You do not need to change this method, but you're welcome to.
 
-        getAction chooses among the best options according to the evaluation function.
+        getAction chooses among the best options according to the evaluation
+        function.
 
-        Just like in the previous project, getAction takes a GameState and returns
-        some Directions.X for some X in the set {North, South, West, East, Stop}
+        Just like in the previous project, getAction takes a GameState and
+        returns some Directions.X for some X in the set {North, South, West,
+        East, Stop}
         """
         # Collect legal moves and successor states
         legalMoves = gameState.getLegalActions()
 
         # Choose one of the best actions
-        scores = [self.evaluationFunction(gameState, action) for action in legalMoves]
+        scores = [
+            self.evaluationFunction(gameState, action)
+            for action
+            in legalMoves
+        ]
         bestScore = max(scores)
-        bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
-        chosenIndex = random.choice(bestIndices)  # Pick randomly among the best
+        bestIndices = [
+            index
+            for index
+            in range(len(scores))
+            if scores[index] == bestScore
+        ]
+        chosenIndex = random.choice(bestIndices)
 
         "Add more of your code here if you want to"
 
@@ -58,10 +69,11 @@ class ReflexAgent(Agent):
         Design a better evaluation function here.
 
         The evaluation function takes in the current and proposed successor
-        GameStates (pacman.py) and returns a number, where higher numbers are better.
+        GameStates (pacman.py) and returns a number, where higher numbers are
+        better.
 
-        The code below extracts some useful information from the state, like the
-        remaining food (newFood) and Pacman position after moving (newPos).
+        The code below extracts some useful information from the state, like
+        the remaining food (newFood) and Pacman position after moving (newPos).
         newScaredTimes holds the number of moves that each ghost will remain
         scared because of Pacman having eaten a power pellet.
 
@@ -73,7 +85,11 @@ class ReflexAgent(Agent):
         newPos = successorGameState.getPacmanPosition()
         newFood = successorGameState.getFood()
         newGhostStates = successorGameState.getGhostStates()
-        newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+        newScaredTimes = [
+            ghostState.scaredTimer
+            for ghostState
+            in newGhostStates
+        ]
 
         "*** YOUR CODE HERE ***"
         return successorGameState.getScore()
@@ -92,17 +108,17 @@ def scoreEvaluationFunction(currentGameState):
 
 class MultiAgentSearchAgent(Agent):
     """
-      This class provides some common elements to all of your
-      multi-agent searchers.  Any methods defined here will be available
-      to the MinimaxPacmanAgent, AlphaBetaPacmanAgent & ExpectimaxPacmanAgent.
+      This class provides some common elements to all of your multi-agent
+      searchers.  Any methods defined here will be available to the
+      MinimaxPacmanAgent, AlphaBetaPacmanAgent & ExpectimaxPacmanAgent.
 
       You *do not* need to make any changes here, but you can if you want to
       add functionality to all your adversarial search agents.  Please do not
       remove anything, however.
 
-      Note: this is an abstract class: one that should not be instantiated.  It's
-      only partially specified, and designed to be extended.  Agent (game.py)
-      is another abstract class.
+      Note: this is an abstract class: one that should not be instantiated.
+      It's only partially specified, and designed to be extended.  Agent
+      (game.py) is another abstract class.
     """
 
     def __init__(self, evalFn='scoreEvaluationFunction', depth='2'):
@@ -118,34 +134,41 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     def getAction(self, game_state: GameState) -> str:
         """
-          Returns the minimax action from the current gameState using self.depth
-          and self.evaluationFunction.
+          Returns the minimax action from the current gameState using
+          self.depth and self.evaluationFunction.
 
-          Here are some method calls that might be useful when implementing minimax.
+          Here are some method calls that might be useful when implementing
+          minimax.
 
-          gameState.getLegalActions(agentIndex):
-            Returns a list of legal actions for an agent
-            agentIndex=0 means Pacman, ghosts are >= 1
+          gameState.getLegalActions(agentIndex): Returns a list of legal
+          actions for an agent agentIndex=0 means Pacman, ghosts are >= 1
 
-          gameState.generateSuccessor(agentIndex, action):
-            Returns the successor game state after an agent takes an action
+          gameState.generateSuccessor(agentIndex, action): Returns the
+          successor game state after an agent takes an action
 
-          gameState.getNumAgents():
-            Returns the total number of agents in the game
-        """
+          gameState.getNumAgents(): Returns the total number of agents in the
+          game """
         legal_actions = game_state.getLegalActions(agentIndex=0)
 
         best_action_index = max(
             range(len(legal_actions)),
             key=lambda action_num: self.min_value(
-                state=game_state.generateSuccessor(agentIndex=0, action=legal_actions[action_num]),
+                state=game_state.generateSuccessor(
+                    agentIndex=0,
+                    action=legal_actions[action_num],
+                ),
                 depth=self.depth,
                 ghost_num=1,
             )
         )
         return legal_actions[best_action_index]
 
-    def max_value(self, state: GameState, depth: int, actor: Optional[int] = None) -> int:
+    def max_value(
+            self,
+            state: GameState,
+            depth: int,
+            actor: Optional[int] = None
+    ) -> int:
         # Sanity check: have all the ghosts been evaluated the last round?
         if actor is not None:
             assert actor == state.getNumAgents()
@@ -185,13 +208,16 @@ class MinimaxAgent(MultiAgentSearchAgent):
             in legal_actions
         ]
 
-        # If this is the last ghost, next optimizer should be from pacman's perspective
+        # If this is the last ghost, next optimizer should be from pacman's
+        # perspective
         next_optimizer = self.max_value \
             if ghost_num == state.getNumAgents() - 1 \
             else self.min_value
 
         # If this is the last ghost, decrement depth
-        next_depth = depth - 1 if ghost_num == state.getNumAgents() - 1 else depth
+        next_depth = depth - 1 \
+            if ghost_num == state.getNumAgents() - 1 \
+            else depth
 
         utilities = [
             next_optimizer(state, next_depth, ghost_num + 1)
@@ -209,29 +235,41 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
     def getAction(self, game_state: GameState) -> str:
         """
-          Returns the minimax action from the current gameState using self.depth
-          and self.evaluationFunction.
+          Returns the minimax action from the current gameState using
+          self.depth and self.evaluationFunction.
 
-          Here are some method calls that might be useful when implementing minimax.
+          Here are some method calls that might be useful when implementing
+          minimax.
 
-          gameState.getLegalActions(agentIndex):
-            Returns a list of legal actions for an agent
-            agentIndex=0 means Pacman, ghosts are >= 1
+          gameState.getLegalActions(agentIndex): Returns a list of legal
+          actions for an agent agentIndex=0 means Pacman, ghosts are >= 1
 
-          gameState.generateSuccessor(agentIndex, action):
-            Returns the successor game state after an agent takes an action
+          gameState.generateSuccessor(agentIndex, action): Returns the
+          successor game state after an agent takes an action
 
-          gameState.getNumAgents():
-            Returns the total number of agents in the game
+          gameState.getNumAgents(): Returns the total number of agents in the
+          game
         """
         legal_actions = game_state.getLegalActions(agentIndex=0)
 
         alpha, beta = -inf, inf
         utility = -inf
-        best_action_index = None
+
         for action_num in range(len(legal_actions)):
-            successor = game_state.generateSuccessor(agentIndex=0, action=legal_actions[action_num])
-            utility = max(utility, self.min_value(successor, depth=self.depth, alpha=alpha, beta=beta, ghost_num=1))
+            successor = game_state.generateSuccessor(
+                agentIndex=0,
+                action=legal_actions[action_num],
+            )
+            utility = max(
+                utility,
+                self.min_value(
+                    successor,
+                    depth=self.depth,
+                    alpha=alpha,
+                    beta=beta,
+                    ghost_num=1,
+                ),
+            )
 
             if utility > alpha:
                 best_action_index = action_num
@@ -239,7 +277,14 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
         return legal_actions[best_action_index]
 
-    def max_value(self, state: GameState, depth: int, alpha: int, beta: int, actor: Optional[int] = None) -> int:
+    def max_value(
+        self,
+        state: GameState,
+        depth: int,
+        alpha: int,
+        beta: int,
+        actor: Optional[int] = None,
+    ) -> int:
         # Sanity check: have all the ghosts been evaluated the last round?
         if actor is not None:
             assert actor == state.getNumAgents()
@@ -253,7 +298,10 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         utility = -inf
         for action in legal_actions:
             successor = state.generateSuccessor(agentIndex=0, action=action)
-            utility = max(utility, self.min_value(successor, depth, alpha, beta, ghost_num=1))
+            utility = max(
+                utility,
+                self.min_value(successor, depth, alpha, beta, ghost_num=1),
+            )
 
             if utility > beta:
                 return utility
@@ -262,7 +310,14 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
         return utility
 
-    def min_value(self, state: GameState, depth: int, alpha: int, beta: int, ghost_num: int) -> int:
+    def min_value(
+        self,
+        state: GameState,
+        depth: int,
+        alpha: int,
+        beta: int,
+        ghost_num: int,
+    ) -> int:
 
         # Game over or search depth has been reached
         if state.isLose() or state.isWin() or depth <= 0:
@@ -273,7 +328,8 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
         legal_actions = state.getLegalActions(ghost_num)
 
-        # If this is the last ghost, next optimizer should be from pacman's perspective
+        # If this is the last ghost, next optimizer should be from pacman's
+        # perspective
         next_optimizer = self.max_value \
             if ghost_num == state.getNumAgents() - 1 \
             else self.min_value
@@ -283,8 +339,20 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
         utility = inf
         for action in legal_actions:
-            successor = state.generateSuccessor(agentIndex=ghost_num, action=action)
-            utility = min(utility, next_optimizer(successor, next_depth, alpha, beta, ghost_num + 1))
+            successor = state.generateSuccessor(
+                agentIndex=ghost_num,
+                action=action,
+            )
+            utility = min(
+                utility,
+                next_optimizer(
+                    successor,
+                    next_depth,
+                    alpha,
+                    beta,
+                    ghost_num + 1,
+                ),
+            )
 
             if utility < alpha:
                 return utility
